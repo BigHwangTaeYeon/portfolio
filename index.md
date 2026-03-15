@@ -281,7 +281,7 @@ POST /api/v1/reports/generate { type: "DAILY" }
 ### 핵심 엔티티 관계
 
 ```mermaid
-
+erDiagram
     users ||--o{ chat_sessions : owns
     users ||--o{ diaries : writes
     users ||--o{ reports : has
