@@ -47,7 +47,7 @@ AI 챗봇과 대화를 통해 감정을 정리하고
 | **Backend 설계** | Spring Boot 기반 REST API, JPA 엔티티·Repository 설계 |
 | **인증 / 인가** | OAuth2 소셜 로그인(카카오·네이버·구글), JWT 인증 |
 | **배포 / 운영** | Docker Compose, Nginx 리버스 프록시 |
-| **관리자 시스템** | 회원·채팅·일기·리포트·설문 관리 API |
+| **관리자 시스템** | 회원·토큰·설문·입장문 관리 API |
 | **데이터 보호** | 이메일/채팅 암호화 |
 | **AI 연동** | Python FastAPI HTTP/SSE 통신 |
 | **AI 서비스** | Gemini 기반 상담 Agent 구성 |
