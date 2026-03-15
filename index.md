@@ -1,5 +1,4 @@
 # AI 심리상담 앱 백엔드 포트폴리오
-https://onoff-m.com/
 
 ---
 
@@ -14,6 +13,8 @@ https://onoff-m.com/
 ---
 
 ## 1. 프로젝트 개요
+
+[홈페이지 접속](https://onoff-m.com/)
 
 ### 서비스 한 줄 소개
 
