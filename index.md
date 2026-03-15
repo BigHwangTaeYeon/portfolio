@@ -213,12 +213,18 @@ AI 챗봇과 대화를 통해 감정을 정리하고 심리적 지원을 받을 
 ```mermaid
 flowchart TB
     subgraph Client["클라이언트"]
-        FE[Next.js Frontend]
-        Admin[Next.js Admin]
+        FE[Frontend :9880]
+        Admin[Admin :9882]
     end
 
-    subgraph Infra["인프라"]
-        Nginx[Nginx :80]
+    subgraph MainNginx["메인 Nginx :80 (호스트 9880)"]
+        N1[location / → frontend]
+        N2[location /api/ → backend]
+    end
+
+    subgraph AdminNginx["Admin Nginx :9882 (호스트 9882)"]
+        A1[location / → SPA]
+        A2[location /api/ → backend]
     end
 
     subgraph Backend["백엔드"]
@@ -226,22 +232,26 @@ flowchart TB
     end
 
     subgraph Data["데이터"]
-        PG[(PostgreSQL + pgvector)]
+        PG[(PostgreSQL)]
         Redis[(Redis)]
     end
 
     subgraph AI["AI 서비스"]
-        Chat[counsel-chat Python :8000]
+        Chat[counsel-chat]
+        Python[Python FastAPI :8000]
     end
 
-    FE --> Nginx
-    Admin --> Nginx
-    Nginx --> Spring
+    Ext[Google Gemini API]
+
+    FE --> MainNginx
+    Admin --> AdminNginx
+    MainNginx --> Spring
+    AdminNginx --> Spring
     Spring --> PG
     Spring --> Redis
     Spring --> Chat
-
-    Chat -.->|Gemini API| External[Google AI]
+    Chat --> Python
+    Python -.->|/chat/stream, /report, /embed| Ext
 ```
 
 ### 주요 요청 흐름
