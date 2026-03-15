@@ -286,12 +286,14 @@ erDiagram
     users ||--o{ diaries : writes
     users ||--o{ reports : has
     users ||--o{ token_usage_logs : has
-    chat_sessions ||--o{ chat_messages : contains
-    chat_messages ||--o| emotion_analysis : has
-    chat_sessions ||--o{ conversation_summary : has
     users ||--o{ user_memories : has
     users ||--o{ emotion_history : has
     users ||--o{ conversation_analysis : has
+    chat_sessions ||--o{ chat_messages : contains
+    chat_sessions ||--o{ conversation_summary : has
+    chat_sessions ||--o{ token_usage_logs : logs
+    chat_messages ||--o| emotion_analysis : has
+    chat_messages ||--o{ token_usage_logs : logs
 
     users {
         bigint id PK
