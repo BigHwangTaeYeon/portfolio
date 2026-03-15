@@ -251,6 +251,7 @@ flowchart TB
     Spring --> Redis
     Spring --> Chat
     Chat --> Python
+    Python --> Ext
 ```
 
 ### 주요 요청 흐름
