@@ -104,21 +104,33 @@ AI 챗봇과 대화를 통해 감정을 정리하고
 
 ---
 
-# 4. ERD / 도메인 설계
+# 4. ERD / 도메인 / Agent 파이프라인 설계
 
-### 핵심 엔티티 관계
+### 4.1 핵심 엔티티 관계
 
 ![erd](mermaid-diagram-2026-03-15-151128.png)
 
 ---
 
-### 설계 판단 근거
+### 4.2 설계 판단 근거
 
 | 설계 | 이유 |
 |-----|-----|
 | **메시지 저장소 PostgreSQL 선택** | Redis 메모리 부담, MongoDB 아키텍처 복잡성 증가 |
 | **pgvector 사용** | Long-term Memory 임베딩 검색 |
 | **Redis 사용** | 세션 기반 Short Memory 관리 |
+
+---
+
+### 4.3 Agent 파이프라인 (Conversation Loop)
+
+상담 요청 시 **Emotion → Safety → Therapy → Recommendation** 순으로 4개 Agent가 순차 실행됩니다.
+| Agent | 입력 | 출력 | 역할 |
+|------|------|------|------|
+| EmotionAgent | user_message | emotion, confidence, risk_level | 감정·위험 수준 분석 |
+| SafetyAgent | user_message, emotion_risk | risk_level, crisis_message | 위험 발언 규칙 감지, 위기 연락처 안내 |
+| TherapyAgent | summary, recent_messages, memories, risk_level | answer | Persona 기반 공감 상담 응답 |
+| RecommendationAgent | emotion, risk_level, user_message, therapy_reply | recommendations | 행동·자기인식·생활 추천 |
 
 ---
 
