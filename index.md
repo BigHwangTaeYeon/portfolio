@@ -236,25 +236,31 @@ erDiagram
 
 ## 5. 트러블슈팅
 
-5.1 스트리밍 3-hop 파이프라인에서의 정합성
-항목	내용
-문제	Python → Spring WebClient → SseEmitter → Client 3단계 스트리밍에서, Client가 done 수신 전에 끊기면 assistant 메시지·감정·추천이 DB에 저장되지 않을 수 있음
-원인	saveStreamResult()는 done 이벤트의 onDone 콜백에서만 호출됨. Client disconnect로 구독이 취소되면 done을 받지 못할 수 있음
-해결	user 메시지는 POST 시점에 먼저 저장. assistant 저장 실패 시 불완전 세션만 남도록 허용. (선택) Python이 완료 시 Spring callback API 호출
-배운 점	긴 파이프라인에서는 "완료" 보장 지점과 실패 시 복구 전략을 명확히 설계해야 함
+### 5.1 스트리밍 3-hop 파이프라인에서의 정합성
 
-5.2 이원화 아키텍처(Spring + Python)에서 트랜잭션 부재
-항목	내용
-문제	메시지 저장(Spring)과 AI 응답 생성(Python)이 서로 다른 서비스라 원자적 트랜잭션 불가
-원인	분산 트랜잭션(2PC 등)은 복잡도·성능 때문에 미도입
-해결	"사용자 메시지 우선 저장"으로 최소 보장. AI 실패 시 assistant/분석/추천만 없음. eventual consistency로 수용
-배운 점	경계가 나뉜 시스템에서는 어떤 데이터를 최소한 확정할지, 실패 시 어떻게 복구할지 전략을 정해야 함
+| 항목 | 내용 |
+|------|------|
+| 문제 | Python → Spring WebClient → SseEmitter → Client 3단계 스트리밍에서, Client가 done 수신 전에 끊기면 assistant 메시지·감정·추천이 DB에 저장되지 않을 수 있음 |
+| 원인 | saveStreamResult()는 done 이벤트의 onDone 콜백에서만 호출됨. Client disconnect로 구독 취소 시 done을 받지 못함 |
+| 해결 | user 메시지는 POST 시점에 먼저 저장. assistant 저장 실패 시 불완전 세션만 남도록 허용. (선택) Python 완료 시 Spring callback API 호출 |
+| 배운 점 | 긴 파이프라인에서는 완료 보장 지점과 실패 시 복구 전략을 명확히 설계해야 함 |
 
-5.3 AI 호출의 타임아웃과 블로킹
-항목	내용
-문제	비스트리밍 AI 호출(report, greeting, preview 등)이 WebClient + .block()으로 처리되어, Spring 스레드가 AI 응답 시까지 블로킹됨
-원인	ExternalHttpClient 구현이 .block() 사용. WebClient에 connect/read timeout 미설정
-해결	스트리밍 경로는 bodyToFlux + subscribe로 비블로킹. WebClient 타임아웃 설정 및 비스트리밍 API 확대 적용 예정
-배운 점	외부 LLM 호출은 지연이 크므로, 비동기·타임아웃·전용 스레드 풀 등을 고려해야 함
+### 5.2 이원화 아키텍처(Spring + Python)에서 트랜잭션 부재
+
+| 항목 | 내용 |
+|------|------|
+| 문제 | 메시지 저장(Spring)과 AI 응답 생성(Python)이 다른 서비스라 원자적 트랜잭션 불가 |
+| 원인 | 분산 트랜잭션(2PC 등)은 복잡도·성능 때문에 미도입 |
+| 해결 | 사용자 메시지 우선 저장으로 최소 보장. AI 실패 시 assistant/분석/추천만 없음. eventual consistency로 수용 |
+| 배운 점 | 경계가 나뉜 시스템에서는 어떤 데이터를 최소한 확정할지, 실패 시 어떻게 복구할지 전략을 정해야 함 |
+
+### 5.3 AI 호출의 타임아웃과 블로킹
+
+| 항목 | 내용 |
+|------|------|
+| 문제 | 비스트리밍 AI 호출(report, greeting, preview 등)이 WebClient + .block()으로 처리되어 Spring 스레드가 AI 응답 시까지 블로킹됨 |
+| 원인 | ExternalHttpClient 구현이 .block() 사용. WebClient에 connect/read timeout 미설정 |
+| 해결 | 스트리밍 경로는 bodyToFlux + subscribe로 비블로킹. WebClient 타임아웃 설정 및 비스트리밍 API 확대 적용 예정 |
+| 배운 점 | 외부 LLM 호출은 지연이 크므로 비동기·타임아웃·전용 스레드 풀 등을 고려해야 함 |
 
 ---
