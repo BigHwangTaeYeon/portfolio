@@ -23,7 +23,7 @@ AI 챗봇과 대화를 통해 감정을 정리하고 심리적 지원을 받을 
 
 - 2025년 1월 ~ 현재 (진행 중)
 
-### 기여 범위
+### 개발 범위
 
 | 영역 | 내용 |
 |------|------|
@@ -41,13 +41,12 @@ AI 챗봇과 대화를 통해 감정을 정리하고 심리적 지원을 받을 
 
 | 영역 | 기술 | 선택 이유 |
 |------|------|-----------|
-| **Backend** | Spring Boot 3.5, Java 21 | LTS, WebFlux(WebClient)로 비동기 HTTP/SSE 호출 |
+| **Backend** | Spring Boot 3.5, Java 21 | I/O Inbound 시스템에 적합 |
+| **AI 연동** | SSE, Python FastAPI, Gemini API | HTTP/스트리밍 통신, 상담·리포트·임베딩 API |
 | **Database** | PostgreSQL 16 + pgvector | 관계형 + 벡터 검색(Long-term Memory) 단일 DB로 운영 |
-| **캐시** | Redis | Short Memory(세션별 최근 메시지) TTL 관리 |
+| **캐시** | Redis | Short Memory(세션별 최근 메시지) 관리 |
 | **인증** | Spring Security, OAuth2 Client, JWT(jjwt) | 소셜 로그인 + API용 Stateless JWT |
-| **AI 연동** | WebClient, SSE | counsel-chat(Python) HTTP/스트리밍 호출 |
-| **배포** | Docker Compose, Nginx | 로컬·운영 환경 통일, 리버스 프록시로 API·OAuth2 라우팅 |
-| **암호화** | AES-256-GCM, HMAC-SHA256 | 이메일 암호화, 검색용 HMAC |
+| **배포** | Docker Compose, Nginx | 로컬·운영 환경 분리, 리버스 프록시로 API·OAuth2 라우팅 |
 
 ---
 
@@ -230,14 +229,32 @@ erDiagram
 
 | 설계 | 이유 |
 |------|------|
-| **세션·메시지 분리** | 세션 단위 목록/삭제, 메시지 단위 페이지네이션·스트리밍 분리 |
-| **리포트 독립 엔티티** | 일일/주간별 기간 고정, AI 생성 본문 저장, 동일 기간 재생성 시 upsert |
-| **일기·상담 이력 분리** | 일기는 사용자 작성, 상담은 AI 대화 기반. 감정 타임라인은 emotion_history로 통합 |
-| **user_memories (pgvector)** | Long-term Memory 검색을 위해 임베딩 벡터 저장, counsel-chat /embed 호출 결과 활용 |
-| **conversation_analysis** | 상담별 감정·주제·요약을 리포트 생성 시 집계용으로 분리 저장 |
+| **메시지 저장소 선택** | Redis: 메모리 부담 우려, MongoDB: 아키텍처 복잡성 증가 → PostgreSQL 단일 DB로 관리 편의성 확보 |
+| **user_memories (pgvector)** | Long-term Memory 검색을 위해 임베딩 벡터 저장 |
 
 ---
 
 ## 5. 트러블슈팅
+
+5.1 스트리밍 3-hop 파이프라인에서의 정합성
+항목	내용
+문제	Python → Spring WebClient → SseEmitter → Client 3단계 스트리밍에서, Client가 done 수신 전에 끊기면 assistant 메시지·감정·추천이 DB에 저장되지 않을 수 있음
+원인	saveStreamResult()는 done 이벤트의 onDone 콜백에서만 호출됨. Client disconnect로 구독이 취소되면 done을 받지 못할 수 있음
+해결	user 메시지는 POST 시점에 먼저 저장. assistant 저장 실패 시 불완전 세션만 남도록 허용. (선택) Python이 완료 시 Spring callback API 호출
+배운 점	긴 파이프라인에서는 "완료" 보장 지점과 실패 시 복구 전략을 명확히 설계해야 함
+
+5.2 이원화 아키텍처(Spring + Python)에서 트랜잭션 부재
+항목	내용
+문제	메시지 저장(Spring)과 AI 응답 생성(Python)이 서로 다른 서비스라 원자적 트랜잭션 불가
+원인	분산 트랜잭션(2PC 등)은 복잡도·성능 때문에 미도입
+해결	"사용자 메시지 우선 저장"으로 최소 보장. AI 실패 시 assistant/분석/추천만 없음. eventual consistency로 수용
+배운 점	경계가 나뉜 시스템에서는 어떤 데이터를 최소한 확정할지, 실패 시 어떻게 복구할지 전략을 정해야 함
+
+5.3 AI 호출의 타임아웃과 블로킹
+항목	내용
+문제	비스트리밍 AI 호출(report, greeting, preview 등)이 WebClient + .block()으로 처리되어, Spring 스레드가 AI 응답 시까지 블로킹됨
+원인	ExternalHttpClient 구현이 .block() 사용. WebClient에 connect/read timeout 미설정
+해결	스트리밍 경로는 bodyToFlux + subscribe로 비블로킹. WebClient 타임아웃 설정 및 비스트리밍 API 확대 적용 예정
+배운 점	외부 LLM 호출은 지연이 크므로, 비동기·타임아웃·전용 스레드 풀 등을 고려해야 함
 
 ---
