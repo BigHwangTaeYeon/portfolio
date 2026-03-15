@@ -217,12 +217,12 @@ flowchart TB
         Admin[Admin :9882]
     end
 
-    subgraph MainNginx["메인 Nginx :80 (호스트 9880)"]
+    subgraph MainNginx["메인 Nginx :80 (9880)"]
         N1[location / → frontend]
         N2[location /api/ → backend]
     end
 
-    subgraph AdminNginx["Admin Nginx :9882 (호스트 9882)"]
+    subgraph AdminNginx["Admin Nginx :9882 (9882)"]
         A1[location / → SPA]
         A2[location /api/ → backend]
     end
@@ -251,7 +251,6 @@ flowchart TB
     Spring --> Redis
     Spring --> Chat
     Chat --> Python
-    Python -.->|/chat/stream, /report, /embed| Ext
 ```
 
 ### 주요 요청 흐름
