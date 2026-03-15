@@ -1,7 +1,5 @@
 # AI 심리상담 앱 백엔드 포트폴리오
 
-> 3년차 백엔드 개발자 이직용 기술 포트폴리오
-
 ---
 
 ## 목차
@@ -287,8 +285,7 @@ erDiagram
     users ||--o{ chat_sessions : owns
     users ||--o{ diaries : writes
     users ||--o{ reports : has
-    users ||--o| token_wallets : has
-    users ||--o{ token_histories : has
+    users ||--o{ token_usage_logs : has
     chat_sessions ||--o{ chat_messages : contains
     chat_messages ||--o| emotion_analysis : has
     chat_sessions ||--o{ conversation_summary : has
@@ -342,6 +339,17 @@ erDiagram
         bigint user_id FK
         text memory_text
         vector embedding
+    }
+
+    token_usage_logs {
+        bigint id PK
+        bigint user_id FK
+        bigint chat_room_id FK
+        bigint message_id FK
+        varchar chat_type
+        varchar agent_name
+        int total_tokens
+        timestamp created_at
     }
 ```
 
