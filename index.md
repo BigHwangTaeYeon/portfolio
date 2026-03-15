@@ -281,7 +281,7 @@ POST /api/v1/reports/generate { type: "DAILY" }
 ### 핵심 엔티티 관계
 
 ```mermaid
-erDiagram
+
     users ||--o{ chat_sessions : owns
     users ||--o{ diaries : writes
     users ||--o{ reports : has
@@ -289,9 +289,15 @@ erDiagram
     users ||--o{ user_memories : has
     users ||--o{ emotion_history : has
     users ||--o{ conversation_analysis : has
+    users ||--o{ recommendations : has
+    users ||--o{ survey_feedback : has
     chat_sessions ||--o{ chat_messages : contains
     chat_sessions ||--o{ conversation_summary : has
     chat_sessions ||--o{ token_usage_logs : logs
+    chat_sessions ||--o{ emotion_history : has
+    chat_sessions ||--o{ conversation_analysis : has
+    chat_sessions ||--o{ survey_feedback : for
+    chat_sessions ||--o{ recommendations : has
     chat_messages ||--o| emotion_analysis : has
     chat_messages ||--o{ token_usage_logs : logs
 
@@ -318,6 +324,38 @@ erDiagram
         varchar role
         text content
         int token_used
+    }
+
+    emotion_analysis {
+        bigint id PK
+        bigint message_id FK
+        varchar emotion
+        double confidence
+        varchar risk_level
+    }
+
+    emotion_history {
+        bigint id PK
+        bigint user_id FK
+        bigint chat_room_id FK
+        varchar emotion
+        double score
+    }
+
+    conversation_summary {
+        bigint id PK
+        bigint session_id FK
+        text summary
+    }
+
+    conversation_analysis {
+        bigint id PK
+        bigint user_id FK
+        bigint chat_room_id FK
+        varchar emotion
+        double emotion_score
+        varchar topic
+        text summary
     }
 
     reports {
@@ -352,6 +390,24 @@ erDiagram
         varchar agent_name
         int total_tokens
         timestamp created_at
+    }
+
+    recommendations {
+        bigint id PK
+        bigint user_id FK
+        bigint session_id FK
+        varchar type
+        varchar title
+        text description
+    }
+
+    survey_feedback {
+        bigint id PK
+        bigint user_id FK
+        bigint chat_room_id FK
+        varchar positive_feedback
+        varchar negative_feedback
+        text additional_comment
     }
 ```
 
