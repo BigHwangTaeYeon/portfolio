@@ -29,7 +29,6 @@ AI 챗봇과 대화를 통해 감정을 정리하고
 - 감정 분석
 - 상담 리포트 생성
 - 일기 기록
-- 사용자 맞춤 추천
 
 ---
 
@@ -48,8 +47,8 @@ AI 챗봇과 대화를 통해 감정을 정리하고
 | **Backend 설계** | Spring Boot 기반 REST API, JPA 엔티티·Repository 설계 |
 | **인증 / 인가** | OAuth2 소셜 로그인(카카오·네이버·구글), JWT 인증 |
 | **배포 / 운영** | Docker Compose, Nginx 리버스 프록시 |
-| **관리자 시스템** | 회원·채팅·일기·리포트·설문·토큰·쿠폰 관리 API |
-| **데이터 보호** | 이메일 AES-256 암호화, HMAC 검색 |
+| **관리자 시스템** | 회원·채팅·일기·리포트·설문 관리 API |
+| **데이터 보호** | 이메일 AES-256 암호화 |
 | **AI 연동** | Python FastAPI HTTP/SSE 통신 |
 | **AI 서비스** | Gemini 기반 상담 Agent 구성 |
 
@@ -81,7 +80,7 @@ AI 챗봇과 대화를 통해 감정을 정리하고
 
 | 기술 | 역할 |
 |-----|-----|
-| **PostgreSQL 16** | 메인 데이터베이스 |
+| **PostgreSQL** | 메인 데이터베이스 |
 | **pgvector** | Long-term Memory 벡터 검색 |
 | **Redis** | Short Memory 캐시 |
 
