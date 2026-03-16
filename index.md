@@ -126,6 +126,7 @@ AI 챗봇과 대화를 통해 감정을 정리하고
 ### 4.3 Agent 파이프라인 (Conversation Loop)
 
 상담 요청 시 **Emotion → Safety → Therapy → Recommendation** 순으로 4개 Agent가 순차 실행됩니다.
+
 | Agent | 입력 | 출력 | 역할 |
 |------|------|------|------|
 | EmotionAgent | user_message | emotion, confidence, risk_level | 감정·위험 수준 분석 |
