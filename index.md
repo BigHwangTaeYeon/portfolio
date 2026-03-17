@@ -236,30 +236,7 @@ WebClient + .block()
 
 ---
 
-## 6-3 Spring-Python API 경계의 명명 규칙 불일치
-
-| 항목 | 내용 |
-|------|------|
-| **상황** | Spring(AiRequest)은 camelCase, Python FastAPI는 보통 snake_case 사용 |
-| **문제** | 필드명 불일치로 `conversationSummary` vs `conversation_summary` 등 누락 가능 |
-| **해결** | Python 수신부에서 둘 다 처리: `body.get("conversationSummary") or body.get("conversation_summary")` |
-| **코드** | counsel-chat/app/main.py |
-| **배운 점** | 서비스 경계에서는 한쪽에 맞추거나, 호환 레이어로 양쪽 형식 모두 수용하는 설계가 필요 |
-
----
-
-## 6-4 POST-GET 2단계 스트리밍 분리
-
-| 항목 | 내용 |
-|------|------|
-| **설계** | 1) POST /messages로 사용자 메시지 저장 후 messageId 반환 2) GET /{messageId}/stream으로 스트리밍 연결 |
-| **이유** | 1) 저장 실패 시 스트리밍 시도 자체를 막을 수 있음 2) 스트리밍 타임아웃(120초)과 저장 API를 분리 3) 클라이언트가 messageId로 저장 여부·스트림 연결을 명확히 구분 4) 재연결 시 messageId만 있으면 스트리밍 재시도 가능 |
-| **트레이드오프** | 단일 요청 대비 요청 2번. 클라이언트는 POST 직후 GET을 바로 호출해야 함 |
-| **배운 점** | 저장과 스트리밍을 분리하면 실패 처리와 재시도 로직을 나누기 쉬움 |
-
----
-
-## 6-5 클라이언트 끊김 시 Python 호출 취소 미연결
+## 6-3 클라이언트 끊김 시 Python 호출 취소 미연결
 
 | 항목 | 내용 |
 |------|------|
@@ -272,7 +249,7 @@ WebClient + .block()
 
 ---
 
-## 6-6 Redis Short Memory 캐시 일관성(Cache-Aside)
+## 6-4 Redis Short Memory 캐시 일관성(Cache-Aside)
 
 | 항목 | 내용 |
 |------|------|
